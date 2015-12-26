@@ -1,0 +1,9 @@
+{
+  "name": "PropExtender",
+  "author": "Joel Tadmor <jtadmor@gmail.com>",
+  "version": 0,
+  "repository": "https://github.com/jtadmor/react-extend-props-component",
+  "dependencies": {
+    "react": "^0.14.3"
+  }
+}
