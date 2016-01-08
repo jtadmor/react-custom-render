@@ -65,7 +65,7 @@ export function extendChildren( props, children ) {
     const refProps = ref ? childrenProps( ref, props ) : {}
     const childProps = _.extend( {}, nameProps, refProps )
 
-    if ( shouldNotRender( props, childProps, name ) ) { return null }
+    if ( shouldNotRender( props, childProps, name ) || shouldNotRender( props, childProps, ref ) ) { return null }
 
     const mergeMethod = props.mergeMethod || mergeProps
     const mergedProps = mergeMethod( child.props, childProps )
