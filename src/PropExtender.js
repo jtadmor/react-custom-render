@@ -1,68 +1,91 @@
 import React from 'react'
+import _ from 'lodash'
 
-if (typeof Object.assign !== 'function') {
-  (function () {
-    Object.assign = function (target) {
-      'use strict';
-      if (target === undefined || target === null) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
+const isExtensibleProp = key => ['style'].indexOf( key ) > -1
 
-      var output = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var source = arguments[index];
-        if (source !== undefined && source !== null) {
-          for (var nextKey in source) {
-            if (source.hasOwnProperty(nextKey)) {
-              output[nextKey] = source[nextKey];
-            }
-          }
-        }
-      }
-      return output;
-    };
-  })();
-}
+const isHandler = key => !!key.match(/^on[A-Z]/)
 
-export function childrenProps(name, props) {
+export const childrenProps = (name, props) => {
   if (props[name + 'Props']) {
     return props[name + 'Props']
   }
 
   return Object.keys(props).reduce( ( childProps, key ) => {
-    if (key.match( new RegExp( '^' + name + '[^s]') )) {
+    if (key.match( new RegExp( '^' + name, 'i') ) && key !== `${name}s`) {
       const newKey = key.replace( name, '' )
+      if ( _.isEmpty(newKey) ) { return childProps }
       const lowerFirst = newKey[0].toLowerCase() + newKey.slice(1)
       childProps[lowerFirst] = props[key]
     }
-    return childProps;
-  }, {});
+    return childProps
+  }, {})
+}
+
+function mergeProps( defaultProps, passedProps ) {
+  const keys = Object.keys( defaultProps ).concat( Object.keys( passedProps ) )
+  return keys.reduce( (merged, key) => {
+    if ( merged.hasOwnProperty(key) ) {
+      return merged
+    } else if ( isExtensibleProp( key ) ) {
+      merged[key] = _.extend( {}, defaultProps[key], passedProps[key] )
+    } else if ( isHandler( key ) ) {
+      merged[key] = function mergedHandler() {
+        if (defaultProps[key]) { defaultProps[key].apply(this, arguments) }
+        if (passedProps[key]) { passedProps[key].apply(this, arguments) }
+      }
+    } else {
+      merged[key] = passedProps.hasOwnProperty(key) ? passedProps[key] : defaultProps[key]
+    }
+
+    return merged
+  }, {})
+}
+
+const shouldNotRender = ( props, childProps, name ) => {
+  if (childProps.render === false ) { return true }
+
+  if (props.strictRender === true || _.contains( props.strictRender, name ) ) {
+    if ( !props[name] && (_.isEmpty(childProps) || props[name] === false) ) { return true }
+  }
+}
+
+export function extendChildren( props, children ) {
+  if (!children) { return null }
+
+  return React.Children.map( children, child => {
+    if (!child) { return null }
+    if ( typeof child === 'string' ) { return child }
+
+    const name = typeof child.type === 'string' ? child.type : child.type.displayName
+    const ref = typeof child.props.ref === 'string' ? child.props.ref : child.props.eRef
+
+    if (!name && !ref) { return null }
+
+    const nameProps = name ? childrenProps( name, props ) : {}
+    const refProps = ref ? childrenProps( ref, props ) : {}
+    const childProps = _.extend( {}, nameProps, refProps )
+
+    if ( shouldNotRender( props, childProps, name ) ) { return null }
+
+    const mergeMethod = props.mergeMethod || mergeProps
+    const mergedProps = mergeMethod( child.props, childProps )
+
+    const updatedChildren = extendChildren( props, child.props.children )
+
+    if ( childProps.component ) {
+      const method = React.isValidElement( childProps.component ) ? React.cloneElement : React.createElement
+      return method( childProps.component, mergedProps, updatedChildren )
+    }
+
+    return React.cloneElement( child, mergedProps, updatedChildren )
+  })
 }
 
 export default class PropExtender extends React.Component {
 
-  extendChildren() {
-    return React.Children.map( this.props.children, child => {
-      if ( typeof child === 'string' ) {
-        return child
-      }
-
-      const name = typeof child.type === 'string' ? child.type : child.type.displayName
-      const childProps = childrenProps( name, this.props )
-
-      if (childProps.component) {
-        const mergedProps = Object.assign( {}, child.props, childProps );
-
-        return React.createElement( childProps.component, mergedProps )
-      }
-
-      return React.cloneElement( child, childProps )
-    }, this)
-  }
-
   render() {
     return (
-      <span>{this.extendChildren()}</span>
+      <span>{extendChildren(this.props, this.props.children)}</span>
     )
   }
 }
