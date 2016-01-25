@@ -5,12 +5,12 @@ const isExtensibleProp = key => ['style'].indexOf( key ) > -1
 
 const isHandler = key => !!key.match(/^on[A-Z]/)
 
-export const childrenProps = (name, props, optionalKeysArray) => {
+export const childrenProps = (name, props) => {
   if (props[name + 'Props']) {
     return props[name + 'Props']
   }
 
-  const keys = optionalKeysArray || _.keys( props )
+  const keys = _.keys( props )
 
   return keys.reduce( ( childProps, key ) => {
     if (key.match( new RegExp( `^${name}[A-Z]`, 'i') ) ) {
