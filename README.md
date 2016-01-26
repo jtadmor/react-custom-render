@@ -51,7 +51,12 @@ extendChildren( {} props, React.Children children, propAssignmentMap ) => {
 
 Use PropExtender like:
 
-<PropExtender props={props}>
+const { children, ...props } = this.props
+
+<PropExtender {...props}>
+  <h2>Title</h2>
+  <FooComponent />
+  <BarComponent />
   { children }
 </PropExtender>
 

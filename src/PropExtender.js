@@ -1,5 +1,11 @@
 import React from 'react'
-import _ from 'lodash'
+
+import assign from 'lodash.assign'
+import isEmpty from 'lodash.isempty'
+import isString from 'lodash.isstring'
+import omit from 'lodash.omit'
+import contains from 'lodash.contains'
+import without from 'lodash.without'
 
 const isExtensibleProp = key => ['style'].indexOf( key ) > -1
 
@@ -10,12 +16,12 @@ export const childrenProps = (name, props) => {
     return props[name + 'Props']
   }
 
-  const keys = _.keys( props )
+  const keys = Object.keys( props )
 
   return keys.reduce( ( childProps, key ) => {
     if (key.match( new RegExp( `^${name}[A-Z]`, 'i') ) ) {
       const newKey = key.replace( name, '' )
-      if ( _.isEmpty(newKey) ) { return childProps }
+      if ( isEmpty(newKey) ) { return childProps }
       const lowerFirst = newKey[0].toLowerCase() + newKey.slice(1)
       childProps[lowerFirst] = props[key]
     }
@@ -31,15 +37,20 @@ export const childrenProps = (name, props) => {
 */
 function mergeProps( defaultProps, passedProps ) {
   const keys = Object.keys( defaultProps ).concat( Object.keys( passedProps ) )
+
   return keys.reduce( (merged, key) => {
     if ( merged.hasOwnProperty(key) ) {
       return merged
     } else if ( isExtensibleProp( key ) ) {
-      merged[key] = _.extend( {}, defaultProps[key], passedProps[key] )
+      merged[key] = assign( {}, defaultProps[key], passedProps[key] )
     } else if ( isHandler( key ) ) {
       merged[key] = function mergedHandler() {
-        if (defaultProps[key]) { defaultProps[key].apply(this, arguments) }
-        if (passedProps[key]) { passedProps[key].apply(this, arguments) }
+        if (defaultProps[key]) {
+          defaultProps[key].apply(this, arguments)
+        }
+        if (passedProps[key]) {
+          passedProps[key].apply(this, arguments)
+        }
       }
     } else {
       merged[key] = passedProps.hasOwnProperty(key) ? passedProps[key] : defaultProps[key]
@@ -52,19 +63,19 @@ function mergeProps( defaultProps, passedProps ) {
 const shouldNotRender = ( props, childProps, originalChildProps, name ) => {
   if (childProps.render === false ) { return true }
 
-  if (_.isFunction( childProps.render ) && !childProps.render( originalChildProps ) ) { return true }
+  if (isFunction( childProps.render ) && !childProps.render( originalChildProps ) ) { return true }
 
-  if (props.strictRender === true || _.contains( props.strictRender, name ) ) {
-    if ( !props[name] && (_.isEmpty(childProps) || props[name] === false) ) { return true }
+  if (props.strictRender === true || contains( props.strictRender, name ) ) {
+    if ( !props[name] && (isEmpty(childProps) || props[name] === false) ) { return true }
   }
 }
 
 export function createPropAssignmentMap( props, arrayOfNames ) {
-  let propKeys = _.without(_.keys(props), ['children', 'ref'] )
+  let propKeys = without(Object.keys(props), ['children', 'ref'] )
 
   const assigner = arrayOfNames.reduce( (propLookup, name) => {
-    if ( _.contains( propKeys, `${name}Props` ) ) {
-      propKeys = _.without( propKeys, `${name}Props` )
+    if ( contains( propKeys, `${name}Props` ) ) {
+      propKeys = without( propKeys, `${name}Props` )
       propLookup[name] = props[`${name}Props`]
       return propLookup
     }
@@ -72,15 +83,15 @@ export function createPropAssignmentMap( props, arrayOfNames ) {
     const nameProps = propKeys.reduce( ( childProps, key ) => {
       if (key.match( new RegExp( `^${name}[A-Z]`, 'i') ) ) {
         const newKey = key.replace( name, '' )
-        if ( _.isEmpty(newKey) ) { return childProps }
+        if ( isEmpty(newKey) ) { return childProps }
         const lowerFirst = newKey[0].toLowerCase() + newKey.slice(1)
         childProps[lowerFirst] = props[key]
-        propKeys = _.without( propKeys, key )
+        propKeys = without( propKeys, key )
       }
       return childProps
     }, {})
 
-    if ( !_.isEmpty( nameProps ) ) {
+    if ( !isEmpty( nameProps ) ) {
       propLookup[name] = nameProps
     }
 
@@ -88,7 +99,7 @@ export function createPropAssignmentMap( props, arrayOfNames ) {
   }, {})
 
   assigner.$main = propKeys.reduce( (rootProps, key) => {
-    return _.set( rootProps, key, props[key] )
+    return set( rootProps, key, props[key] )
   }, {})
 
   return assigner
@@ -98,17 +109,17 @@ export function getNames( children ) {
   if (!children) { return [] }
 
   const arr = React.Children.toArray( children ).reduce( (refs, child) => {
-    if (!child || _.isString( child ) ) { return refs }
+    if (!child || isString( child ) ) { return refs }
 
-    const displayName = _.isString( child.type ) ? child.type : child.type.displayName
+    const displayName = isString( child.type ) ? child.type : child.type.displayName
     const name = displayName && displayName[0].toLowerCase() + displayName.slice(1)
-    const ref = _.isString( child.props.ref ) ? child.props.ref : child.props.exRef
+    const ref = isString( child.props.ref ) ? child.props.ref : child.props.exRef
 
     const childrenNames = getNames( child.props.children )
     return refs.concat( [name, ref].concat( childrenNames ) )
   }, [])
 
-  return _.unique( arr )
+  return unique( arr )
 }
 
 /*
@@ -122,14 +133,14 @@ export function getNames( children ) {
 */
 export function customRender(Element, params) {
   if (!React.isValidElement(Element)) { return null }
-  const opts = _.defaults( {}, params, {
+  const opts = assign( {},{
     mergeMethod: mergeProps
-  })
+  }, params)
 
   const componentProps = Element.props
   const mergedProps = opts.mergeProps ? opts.mergeMethod( componentProps, mergeProps ) : componentProps
   const customComponent = mergedProps.component
-  const passProps = _.omit( mergedProps, 'component' )
+  const passProps = omit( mergedProps, 'component' )
 
   if (customComponent) {
     const isValidElement = React.isValidElement(customComponent)
@@ -151,15 +162,15 @@ export function extendChildren( props, children, propAssigner ) {
   return React.Children.map( children, child => {
     if (!child) { return null }
 
-    if ( _.isString( child ) ) { return child }
+    if ( isString( child ) ) { return child }
 
-    const displayName = _.isString( child.type ) ? child.type : child.type.displayName
+    const displayName = isString( child.type ) ? child.type : child.type.displayName
     const name = displayName && displayName[0].toLowerCase() + displayName.slice(1)
-    const ref = _.isString( child.props.ref ) ? child.props.ref : child.props.exRef
+    const ref = isString( child.props.ref ) ? child.props.ref : child.props.exRef
 
     if (!name && !ref) { return child }
 
-    const childProps = _.extend( {}, propAssigner[name], propAssigner[ref] )
+    const childProps = assign( {}, propAssigner[name], propAssigner[ref] )
 
     if ( shouldNotRender( props, childProps, child.props, name ) || shouldNotRender( props, childProps, child.props, ref ) ) { return null }
 
