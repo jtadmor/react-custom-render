@@ -1,6 +1,6 @@
 {
   "name": "react-prop-extender",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "./build/PropExtender.js",
   "author": "Joel Tadmor <jtadmor@gmail.com>",
   "repository": "https://github.com/jtadmor/react-extend-props-component",

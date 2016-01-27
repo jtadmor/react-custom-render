@@ -9,7 +9,7 @@ export const childrenProps = (name, props) => {
   const keys = Object.keys( props )
 
   return keys.reduce( ( childProps, key ) => {
-    if (key.match( new RegExp( `^${name}[A-Z]`, 'i') ) ) {
+    if (key.match( new RegExp( `^${name}[A-Z]` ) ) ) {
       const newKey = key.replace( name, '' )
       if ( _.isEmpty(newKey) ) { return childProps }
       const lowerFirst = newKey[0].toLowerCase() + newKey.slice(1)
@@ -127,7 +127,6 @@ export const getNames = children => {
     customProps: props to be merged using a provided or default merge method
     mergeMethod: (defaultProps, customProps) => combinedProps
   }
-
 */
 export const customRender = (Element, params) => {
   if (!React.isValidElement(Element)) { return null }
@@ -139,6 +138,7 @@ export const customRender = (Element, params) => {
   const mergedProps = opts.customProps ? opts.mergeMethod( componentProps, opts.customProps ) : componentProps
   const { component, ...passProps } = mergedProps
 
+
   if (component) {
     const isValidElement = React.isValidElement(component)
     if (isValidElement) {
@@ -146,7 +146,7 @@ export const customRender = (Element, params) => {
     }
 
     return React.createElement(component, passProps)
-  } else if (opts.mergeProps) {
+  } else if (opts.customProps) {
     return React.cloneElement( Element, passProps )
   }
 
@@ -175,9 +175,12 @@ export const extendChildren = ( props, children, propAssigner ) => {
 
     _.assign( childProps, { children: updatedChildren })
 
-    return customRender( child, {
-      customProps: childProps, mergeMethod: props.mergeMethod
-    })
+    const params = { customProps: childProps }
+    if (_.isFunction(props.mergeMethod)) {
+      params.mergeMethod = props.mergeMethod
+    }
+
+    return customRender(child, params)
   })
 }
 
