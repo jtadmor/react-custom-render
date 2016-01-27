@@ -69,6 +69,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
 	var childrenProps = exports.childrenProps = function childrenProps(name, props) {
 	  if (props[name + 'Props']) {
 	    return props[name + 'Props'];
@@ -77,7 +79,7 @@
 	  var keys = Object.keys(props);
 
 	  return keys.reduce(function (childProps, key) {
-	    if (key.match(new RegExp('^' + name + '[A-Z]', 'i'))) {
+	    if (key.match(new RegExp('^' + name + '[A-Z]'))) {
 	      var newKey = key.replace(name, '');
 	      if (_lodash2.default.isEmpty(newKey)) {
 	        return childProps;
@@ -103,7 +105,7 @@
 	  Style - gets extended
 	  on[eventName] - if both sets of props have a handler, both are called
 	*/
-	function mergeProps(defaultProps, passedProps) {
+	function mergeDefaultAndCustomProps(defaultProps, passedProps) {
 	  var keys = _lodash2.default.union(_lodash2.default.keys(defaultProps), _lodash2.default.keys(passedProps));
 
 	  return keys.reduce(function (merged, key) {
@@ -207,32 +209,32 @@
 	  Used to swap out an element
 	  @Element: a valid React element
 	  @params: {
-	    mergeProps: props to be merged using a provided or default merge method
-	    mergeMethod: (defaultProps, mergeProps) => combinedProps
+	    customProps: props to be merged using a provided or default merge method
+	    mergeMethod: (defaultProps, customProps) => combinedProps
 	  }
-
 	*/
 	var customRender = exports.customRender = function customRender(Element, params) {
 	  if (!_react2.default.isValidElement(Element)) {
 	    return null;
 	  }
 	  var opts = _lodash2.default.assign({}, {
-	    mergeMethod: mergeProps
+	    mergeMethod: mergeDefaultAndCustomProps
 	  }, params);
 
 	  var componentProps = Element.props;
-	  var mergedProps = opts.mergeProps ? opts.mergeMethod(componentProps, mergeProps) : componentProps;
-	  var customComponent = mergedProps.component;
-	  var passProps = _lodash2.default.omit(mergedProps, 'component');
+	  var mergedProps = opts.customProps ? opts.mergeMethod(componentProps, opts.customProps) : componentProps;
+	  var component = mergedProps.component;
 
-	  if (customComponent) {
-	    var isValidElement = _react2.default.isValidElement(customComponent);
+	  var passProps = _objectWithoutProperties(mergedProps, ['component']);
+
+	  if (component) {
+	    var isValidElement = _react2.default.isValidElement(component);
 	    if (isValidElement) {
-	      return _react2.default.cloneElement(customComponent, passProps);
+	      return _react2.default.cloneElement(component, passProps);
 	    }
 
-	    return _react2.default.createElement(customComponent, passProps);
-	  } else if (opts.mergeProps) {
+	    return _react2.default.createElement(component, passProps);
+	  } else if (opts.customProps) {
 	    return _react2.default.cloneElement(Element, passProps);
 	  }
 
@@ -267,17 +269,16 @@
 	      return null;
 	    }
 
-	    var mergeMethod = props.mergeMethod || mergeProps;
-	    var mergedProps = mergeMethod(child.props, childProps);
-
 	    var updatedChildren = extendChildren(props, child.props.children, propAssigner);
 
-	    if (childProps.component) {
-	      var method = _react2.default.isValidElement(childProps.component) ? _react2.default.cloneElement : _react2.default.createElement;
-	      return method(childProps.component, mergedProps, updatedChildren);
+	    _lodash2.default.assign(childProps, { children: updatedChildren });
+
+	    var params = { customProps: childProps };
+	    if (_lodash2.default.isFunction(props.mergeMethod)) {
+	      params.mergeMethod = props.mergeMethod;
 	    }
 
-	    return _react2.default.cloneElement(child, mergedProps, updatedChildren);
+	    return customRender(child, params);
 	  });
 	};
 

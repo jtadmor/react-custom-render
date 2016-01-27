@@ -80,6 +80,16 @@ describe('customRender', () => {
     expect( output ).toEqualJSX(<span>Hello World</span>)
   })
 
+  it('should allow passing in no element, and accept just props as second arg', () => {
+    const swap = customRender( null, { component: Substitution, text: "Hello World" })
+
+    const renderer = TestUtils.createRenderer()
+    renderer.render(swap)
+    const output = renderer.getRenderOutput()
+
+    expect( output ).toEqualJSX(<span>Hello World</span>)
+  })
+
   // Shallow rendering doesn't yet support refs, see https://facebook.github.io/react/docs/test-utils.html
   // it('should preserve refs', () => {
   //   const renderer = TestUtils.createRenderer()

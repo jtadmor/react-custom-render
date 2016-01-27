@@ -129,17 +129,24 @@ export const getNames = children => {
   }
 */
 export const customRender = (Element, params) => {
-  if (!React.isValidElement(Element)) { return null }
   const opts = _.assign( {}, {
     mergeMethod: mergeDefaultAndCustomProps
   }, params)
 
-  const componentProps = Element.props
-  const mergedProps = opts.customProps ? opts.mergeMethod( componentProps, opts.customProps ) : componentProps
+  const componentProps = Element ? Element.props : {}
+  let mergedProps = {}
+
+  if (Element) {
+    mergedProps = opts.customProps ? opts.mergeMethod( componentProps, opts.customProps ) : componentProps
+  } else {
+    mergedProps = params
+  }
+
   const { component, ...passProps } = mergedProps
 
-
-  if (component) {
+  if (!React.isValidElement(Element) && !component) {
+    return null
+  } else if (component) {
     const isValidElement = React.isValidElement(component)
     if (isValidElement) {
       return React.cloneElement(component, passProps)
