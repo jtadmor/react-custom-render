@@ -1,9 +1,9 @@
 // webpack.config.js
 module.exports = {
-  entry: './src/PropExtender.js',
+  entry: './src/CustomRender.js',
   output: {
     path: './build',
-    filename: 'PropExtender.js'       
+    filename: 'CustomRender.js'       
   },
   module: {
     loaders: [
