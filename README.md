@@ -2,7 +2,9 @@
 
 <em>A utility method for re-usable components</em>
 
-To use: npm install react-prop-extender
+To use: npm install react-custom-render
+
+`import customRender from 'react-custom-render`
 
 tl,dr: 
 
