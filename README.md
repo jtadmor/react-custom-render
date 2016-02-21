@@ -2,13 +2,15 @@
 
 <em>A utility method for re-usable components</em>
 
-To use: npm install react-custom-render
+`npm install react-custom-render`
 
-`import customRender from 'react-custom-render`
+``
 
 tl,dr: 
 
 ```jsx
+import customRender from 'react-custom-render
+
 customRender({
   component: 'button',
   children: 'Click me!',
