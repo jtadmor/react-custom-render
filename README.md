@@ -4,8 +4,6 @@
 
 `npm install react-custom-render`
 
-``
-
 tl,dr: 
 
 ```jsx
