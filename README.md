@@ -111,7 +111,7 @@ class ToggledDisplay extends Component {
   }
 
   render() {
-    const propMap = createPropMap(this.props)
+    const propMap = createPropMap(this.props, ['button', 'display']))
     const buttonDefaults = {
       component: 'button'
       onClick: this.handleClick
@@ -121,7 +121,7 @@ class ToggledDisplay extends Component {
     return (
       <div>
         { customRender( buttonDefaults, propMap.button ) }
-        { this.state.show && <Display /> }
+        { this.state.show && <Display {...propMap.display} /> }
       </div>
     )
   }
@@ -131,7 +131,7 @@ class ToggledDisplay extends Component {
 then
 
 ```jsx
-<ToggledDisplay buttonComponent=AwesomeButton buttonClassName="awesome-class" buttonChildren="Awesome Toggle!" />
+<ToggledDisplay buttonComponent=AwesomeButton buttonClassName="awesome-class" buttonChildren="Awesome Toggle!" displayClassName="super-class" />
 ```
 
 now ToggledDisplay is like:
@@ -139,7 +139,7 @@ now ToggledDisplay is like:
 ```jsx
 <div>
   <AwesomeButton className="awesome-class" onClick={this.handleClick}>Awesome Toggle!</AwesomeButton>
-  {  this.state.show && <Display /> }
+  {  this.state.show && <Display className="super-class" /> }
 </div>
 ```
 
