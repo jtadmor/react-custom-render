@@ -2,7 +2,7 @@
 module.exports = {
   entry: './src/CustomRender.js',
   output: {
-    path: './build',
+    path: './dist',
     filename: 'CustomRender.js'       
   },
   module: {
