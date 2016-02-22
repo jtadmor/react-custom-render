@@ -84,9 +84,12 @@ You must pass a 'component' property.
 <h3>Advanced Usage</h3>
 
 You can optionally pass in a third options object that allows you to control how `defaultProps` and `customProps`.
-`[] merge`: Array of strings or regex. Keys that match this array will be merged, otherwise they will be replaced. Defaults to `['className', 'style', /^on[A-Z]/]`.
-`[] customMerge`: If you want to merge everything that is merged by default, but want to add a few other keys, using customMerge is easier. Defaults to `[]`.
-`fn mergeMethod`: Provide your own custom method for combining two props. Will be called with `(oldProp, newProp)`. By default, strings are combined, arrays are concatted, objects are merged with Object.assign, and functions become `(..args) => oldFn(...args) newFn(...args)`.
+
+- `[] merge`: Array of strings or regex. Keys that match this array will be merged, otherwise they will be replaced. Defaults to `['className', 'style', /^on[A-Z]/]`.
+
+- `[] customMerge`: If you want to merge everything that is merged by default, but want to add a few other keys, using customMerge is easier. Defaults to `[]`.
+
+- `fn mergeMethod`: Provide your own custom method for combining two props. Will be called with `(oldProp, newProp)`. By default, strings are combined, arrays are concatted, objects are merged with Object.assign, and functions become `(..args) => oldFn(...args) newFn(...args)`.
 
 <h3>Tips, etc.</h3>
 
