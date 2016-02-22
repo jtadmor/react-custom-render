@@ -44,7 +44,7 @@ will render as
 
 This utility was developed with two main use cases in mind:
 
-1. A re-usable component wants to generally render as a basic component, like a `<button />`, but you'd want to allow parent components to optionally render it as something more awesome, like a custom `<AwesomeButton />`
+- A re-usable component wants to generally render as a basic component, like a `<button />`, but you'd want to allow parent components to optionally render it as something more awesome, like a custom `<AwesomeButton />`
 This is basically a shortcut for:
 ```
 function CustomizableButton({ component, ...otherProps }) {
@@ -52,7 +52,7 @@ function CustomizableButton({ component, ...otherProps }) {
 }
 ```
 
-2. A re-usable component has an event handler to manage local state, but you want to allow parent components to pass in additional handlers.
+- A re-usable component has an event handler to manage local state, but you want to allow parent components to pass in additional handlers.
 This is basically a shortcut for:
 ```
 class ToggledDisplay extends Component {
@@ -83,7 +83,7 @@ You must pass a 'component' property.
 
 <h3>Advanced Usage</h3>
 
-You can optionally pass in a third options object that allows you to control how `defaultProps` and `customProps`.
+You can optionally pass in a third options object that allows you to control how `defaultProps` and `customProps` are combined.
 
 - `[] merge`: Array of strings or regex. Keys that match this array will be merged, otherwise they will be replaced. Defaults to `['className', 'style', /^on[A-Z]/]`.
 
