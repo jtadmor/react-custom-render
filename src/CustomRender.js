@@ -4,7 +4,12 @@ import invariant from 'invariant'
 function shouldMerge(key, options) {
   const array = options.merge.concat(options.customMerge)
 
-  return array.some( (pattern) => key.match(pattern) )
+  return array.some( (pattern) => {
+    if (typeof pattern === 'string') {
+      return key === pattern
+    }
+    return key.match(pattern) 
+  })
 }
 
 function mergeProp(oldProp, newProp) {
@@ -15,9 +20,14 @@ function mergeProp(oldProp, newProp) {
     return oldProp + ' ' + newProp
   }
 
+  if (Array.isArray(oldProp) && Array.isArray(newProp)) {
+    return oldProp.concat(newProp)
+  }
+
   if (typeof oldProp === 'object' && typeof newProp === 'object' ) {
     return Object.assign( {}, oldProp, newProp )
   }
+
 
   if (typeof oldProp === 'function' && typeof newProp === 'function' ) {
     return (...args) => {
@@ -27,7 +37,7 @@ function mergeProp(oldProp, newProp) {
   }
 
   // If type of prop does not align, return the new one
-  return newProp
+  return newProp || oldProp
 }
 
 function mergeDefaultAndCustomProps( defaultProps, customProps, options ) {
@@ -59,7 +69,8 @@ function mergeDefaultAndCustomProps( defaultProps, customProps, options ) {
 const customRender = (defaultProps, customProps, params) => {
   const opts = Object.assign({
     merge: ['className', 'style', /^on[A-Z]/],
-    customMerge: []
+    customMerge: [],
+    mergeMethod: mergeProp
   }, params)
 
   const mergedProps = customProps
