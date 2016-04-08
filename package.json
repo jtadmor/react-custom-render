@@ -1,6 +1,6 @@
 {
   "name": "react-custom-render",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
   "main": "lib/CustomRender.js",
   "author": "Joel Tadmor <jtadmor@gmail.com>",
@@ -9,7 +9,7 @@
     "invariant": "^2.2.0"
   },
   "peerDependencies": {
-    "react": "~0.14.0"
+    "react": ">=0.14.0"
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",
