@@ -109,4 +109,20 @@ describe('customRender', () => {
 
   // TODO: Combined handlers
   // TODO: Custom merge props
+
+  it('should wrap a component', () => {
+    const wrapped = customRender({
+      component: 'h1',
+      children: 'Hello World'
+    }, {
+      wrapperComponent: 'div',
+      wrapperClassName: 'test-class'
+    })
+
+    expect( wrapped ).toEqualJSX(
+      <div className="test-class">
+        <h1>Hello World</h1>
+      </div>
+    )
+  })
 })

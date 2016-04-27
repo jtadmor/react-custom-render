@@ -1,5 +1,6 @@
 import React from 'react'
 import invariant from 'invariant'
+import createPropMap from 'prop-map'
 
 function shouldMerge(key, options) {
   const array = options.merge.concat(options.customMerge)
@@ -66,6 +67,14 @@ function mergeDefaultAndCustomProps( defaultProps, customProps, options ) {
   }, {})
 }
 
+function renderWrapper(wrapperProps, child) {
+  const { component, ...passProps } = wrapperProps
+
+  invariant(component, 'passed wrapProps to customRender without a wrapper component')
+
+  return React.createElement(component, passProps, child)
+}
+
 const customRender = (defaultProps, customProps, params) => {
   const opts = Object.assign({
     merge: ['className', 'style', /^on[A-Z]/],
@@ -77,11 +86,18 @@ const customRender = (defaultProps, customProps, params) => {
     ? mergeDefaultAndCustomProps( defaultProps, customProps, opts )
     : defaultProps
 
-  const { component, ...passProps } = mergedProps
+  const propMap = createPropMap(mergedProps, ['wrapper'])
 
+  const { component, ...passProps } = propMap.$main
+  
   invariant(component, 'customRender must be passed a component prop.')
 
-  return React.createElement(component, passProps)
+  const wrapperProps = propMap.wrapper
+  const shouldWrap = wrapperProps && Object.keys(wrapperProps).length
+
+  const el = React.createElement(component, passProps)
+
+  return shouldWrap ? renderWrapper(wrapperProps, el) : el
 }
 
 export default customRender

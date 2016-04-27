@@ -42,7 +42,7 @@ will render as
 
 <h3>Why is this helpful?</h3>
 
-This utility was developed with two main use cases in mind:
+This utility was developed with three main use cases in mind:
 
 - A re-usable component wants to generally render as a basic component, like a `<button />`, but you'd want to allow parent components to optionally render it as something more awesome, like a custom `<AwesomeButton />`
 This is basically a shortcut for:
@@ -77,9 +77,33 @@ class ToggledDisplay extends Component {
 }
 ```
 
+- A re-usable component renders several sub-components, and you would like to wrap one of them in a different presentational component.
+This is basically a shortcut for:
+```
+function AllowWrappers({ titleWrapperComponent, titleWrapperProps, bodyWrapperComponent, bodyWrapperProps }) {
+  
+  const title = titleWrapperComponent
+    ? React.createElement(titleWrapperComponent, titleWrapperProps, <Title />)
+    : <Title />
+
+  const body = bodyWrapperComponent
+    ? React.createElement(bodyWrapperComponent, bodyWrapperProps, <Body />)
+    : <Body />
+
+  return (
+    <div>
+      { title }
+      { body }
+    </div>
+  )
+}
+```
+
 <h3>Any limitations?</h3>
 
 You must pass a 'component' property.
+
+Properties that begin with 'wrapper' will not be passed to your component. If you pass wrapperProps, you must include a wrapperComponent.
 
 <h3>Advanced Usage</h3>
 
