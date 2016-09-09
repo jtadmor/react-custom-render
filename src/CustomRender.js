@@ -86,16 +86,31 @@ const customRender = (defaultProps, customProps, params) => {
     ? mergeDefaultAndCustomProps( defaultProps, customProps, opts )
     : defaultProps
 
-  const propMap = createPropMap(mergedProps, ['wrapper'])
-
-  const { component, ...passProps } = propMap.$main
+  const { component, ...passProps } = mergedProps
   
   invariant(component, 'customRender must be passed a component prop.')
 
-  const wrapperProps = propMap.wrapper
+  return React.createElement(component, passProps)
+}
+
+export const customRenderWithWrapper = (defaultProps, customProps, params) => {
+  const opts = Object.assign({
+    merge: ['className', 'style', /^on[A-Z]/],
+    customMerge: [],
+    mergeMethod: mergeProp,
+    wrapperKey: 'wrapper'
+  }, params)
+
+  const defaultWrapper = createPropMap(defaultProps, [wrapperKey])[wrapperKey]
+  const customWrapper = createPropMap(customProps, [wrapperKey])[wrapperKey]
+
+  const wrapperProps = customWrapper && defaultWrapper
+    ? mergeDefaultAndCustomProps(defaultWrapper, customWrapper)
+    : defaultWrapper || customWrapper
+
   const shouldWrap = wrapperProps && Object.keys(wrapperProps).length
 
-  const el = React.createElement(component, passProps)
+  const el = customRender(defaultProps, customProps, params)
 
   return shouldWrap ? renderWrapper(wrapperProps, el) : el
 }
